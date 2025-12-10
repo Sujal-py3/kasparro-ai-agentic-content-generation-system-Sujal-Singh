@@ -1,0 +1,63 @@
+{
+  "page_type": "comparison_page",
+  "title": "Comparison: GlowBoost Vitamin C Serum vs Generic Serum",
+  "product_a": {
+    "name": "GlowBoost Vitamin C Serum",
+    "concentration": "10% Vitamin C",
+    "skin_type": [
+      "Oily",
+      "Combination"
+    ],
+    "key_ingredients": [
+      "Vitamin C",
+      "Hyaluronic Acid"
+    ],
+    "benefits": [
+      "Brightening",
+      "Fades dark spots"
+    ],
+    "how_to_use": "Apply 2–3 drops in the morning before sunscreen",
+    "side_effects": "Mild tingling for sensitive skin",
+    "price": "₹699"
+  },
+  "product_b": {
+    "name": "Generic Serum",
+    "concentration": "Standard Concentration",
+    "skin_type": [
+      "All Skin Types"
+    ],
+    "key_ingredients": [
+      "Vitamin C"
+    ],
+    "benefits": [
+      "Brightening"
+    ],
+    "how_to_use": "Apply daily.",
+    "side_effects": "None listed",
+    "price": "₹349"
+  },
+  "differences": {
+    "ingredients": {
+      "a_only": [
+        "Hyaluronic Acid"
+      ],
+      "b_only": [],
+      "common": [
+        "Vitamin C"
+      ]
+    },
+    "benefits": {
+      "a_only": [
+        "Fades dark spots"
+      ],
+      "b_only": [],
+      "common": [
+        "Brightening"
+      ]
+    }
+  },
+  "recommendation": [
+    "Product A is targeted for Oily, Combination, while Product B is for All Skin Types.",
+    "Product B is cheaper at ₹349."
+  ]
+}
