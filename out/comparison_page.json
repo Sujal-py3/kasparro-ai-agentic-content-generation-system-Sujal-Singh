@@ -1,0 +1,49 @@
+{
+  "page_type": "comparison_page",
+  "product_a": {
+    "name": "GlowBoost Vitamin C Serum",
+    "concentration": "10% Vitamin C",
+    "skin_type": [
+      "Oily",
+      "Combination"
+    ],
+    "key_ingredients": [
+      "Vitamin C",
+      "Hyaluronic Acid"
+    ],
+    "benefits": [
+      "Brightening",
+      "Fades dark spots"
+    ],
+    "usage": "Apply 2–3 drops in the morning before sunscreen",
+    "side_effects": "Mild tingling for sensitive skin",
+    "price": "₹699"
+  },
+  "product_b": {
+    "name": "GlowLux Vitamin C Serum",
+    "key_ingredients": [
+      "Vitamin C",
+      "Green Tea Extract"
+    ],
+    "benefits": [
+      "Brightening",
+      "Anti-inflammatory"
+    ],
+    "price": "₹799"
+  },
+  "differences": {
+    "skin_type": [
+      "Sensitive"
+    ],
+    "concentration": [
+      "20% Vitamin C"
+    ],
+    "usage": [
+      "Apply 2–3 drops at night before moisturizer"
+    ],
+    "side_effects": [
+      "No known side effects"
+    ]
+  },
+  "recommendations": []
+}

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 
 # -----------------------------
@@ -19,20 +19,15 @@ class ProductData(BaseModel):
 # -----------------------------
 # 2. FAQ STRUCTURES
 # -----------------------------
-
 class FAQPair(BaseModel):
     question: str
     answer: str
 
 
 class FAQObject(BaseModel):
-    title: str = Field(..., description="Page title")
-    categorized_questions: Dict[str, List[str]] = Field(
-        ..., description="15+ questions grouped by category"
-    )
-    faq_page: List[FAQPair] = Field(
-        ..., description="Top 5 Q&A pairs used for the public FAQ page"
-    )
+    title: str = Field(..., description="Should always be 'faq_page'")
+    categorized_questions: Dict[str, List[str]]
+    faq_page: List[FAQPair]
 
 
 # -----------------------------

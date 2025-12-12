@@ -1,39 +1,75 @@
-# Project Documentation: Agentic Content Generation System
+# Project Documentation
 
-## 1. System Overview
-This project is a modular, agentic system designed to automate the creation of high-quality marketing assets (Product Pages, FAQs, and Comparison Pages) from raw product data. It leverages **LangChain** and **Groq (Llama-3)** to understand semi-structured input and generate strictly compliant JSON outputs.
+## Problem Statement
+Manual creation of marketing assets (FAQs, Product Pages, Comparison Pages) from raw product data is time-consuming, inconsistent, and prone to errors. There is a need for an automated, intelligent system that can generate structured, high-quality content while strictly adhering to data constraints and formatting requirements.
 
-## 2. Architecture Design
-The system follows a linear **LCEL (LangChain Expression Language)** pipeline architecture:
+## Solution Overview
+The **Agentic Content Generation System** is an automated pipeline leveraging Large Language Models (LLM) to transform raw product data into structured marketing assets.
+*   **Automated Extraction**: Smartly parses unstructured inputs.
+*   **Parallel Generation**: Simultaneously creates FAQs, Product Pages, and Comparisons.
+*   **Strict Compliance**: Uses Pydantic to ensure valid JSON outputs.
+*   **Scalable Architecture**: Built on LangChain and Groq for high-performance orchestration.
 
-1.  **Ingestion & Analysis**: Raw data is parsed by the **Product Analyzer Agent** into a strict internal schema (`ProductData`).
-2.  **Parallel Generation**: The structured data is broadcast to three specialized agents running in parallel:
-    *   **Content Generator (FAQ)**: Generates categorized questions and detailed Q&A pairs.
-    *   **Content Generator (Product Page)**: Generates marketing copy and structured usage instructions.
-    *   **Comparison Generator**: Generates a fictional competitor (Product B) based on rule-based prompts and performs a feature-by-feature comparison.
-3.  **Output**: JSON files are persisted to the `/out` directory.
+## Scopes & Assumptions
+### Scope
+*   **Input**: Raw product attributes (name, ingredients, usage, etc.).
+*   **Output**: Three distinct JSON files (`faq.json`, `product_page.json`, `comparison_page.json`).
+*   **Agents**: Product Analyzer, Content Generator (FAQ/Page), Comparison Generator.
 
-## 3. Component Details
+### Assumptions
+*   Input data is provided in a dictionary format.
+*   The "Product B" for comparisons is generated statistically/fictionally if not provided.
+*   The system uses the `llama-3.1-8b-instant` model via Groq.
 
-### 3.1 Data Models (`src/models.py`)
--   **`ProductData`**: The single source of truth for product information.
--   **`Usage`**: Structured step-by-step usage instructions.
--   **`FAQObject`**: Contains both `categorized_questions` (list of 15) and `faq_page` (top 5 Q&A).
--   **`ComparisonPage`**: Contains full data for Product A vs. Product B, differences, and recommendations.
+## System Design
 
-### 3.2 Agents
--   **Product Analyzer**: Uses `ChatGroq` to extract entities without hallucination. strict schema enforcement via `PydanticOutputParser`.
--   **Content Generator**: 
-    -   *FAQ Mode*: Generates 15 questions across specific categories (Usage, Safety, etc.).
-    -   *Product Page Mode*: Focuses on copywriting and structuring instructions.
--   **Comparison Generator**: 
-    -   Implements "Product B" generation logic (price +20%, distinct ingredients) via prompt engineering.
+### High-Level Architecture
+The system follows a strictly orchestrated **LangChain LCEL Pipeline**.
 
-### 3.3 Orchestration (`src/orchestrator.py`)
--   Uses `RunnableSequence` (`|`) to pipe analysis results to generation.
--   Uses `RunnableParallel` to execute the three generation tasks concurrently.
+```mermaid
+graph LR
+    Input[Raw Data] --> A[Product Analyzer]
+    A -->|ProductData| Router{Parallel/Router}
+    
+    Router --> B[Content Gen: FAQ]
+    Router --> C[Content Gen: Product Page]
+    Router --> D[Comparison Gen: Comp Page]
+    
+    B --> Out1(faq.json)
+    C --> Out2(product_page.json)
+    D --> Out3(comparison_page.json)
+```
 
-## 4. Setup & Usage
-1.  **Environment**: Ensure `GROQ_API_KEY` is set in `.env`.
-2.  **Run**: `python src/main.py`
-3.  **Output**: Check `out/faq.json`, `out/product_page.json`, `out/comparison_page.json`.
+### Sequence Flow
+Data flows linearly with parallel execution for generation tasks.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Orch as Orchestrator
+    participant Analyzer as ProductAnalyzer
+    participant Gen as Generators(FAQ/Page/Comp)
+    participant FS as FileSystem
+
+    User->>Orch: run(raw_data)
+    Orch->>Analyzer: analyze(raw_data)
+    Analyzer-->>Orch: ProductData (Structured)
+    
+    par Parallel Generation
+        Orch->>Gen: generate_faq(ProductData)
+        Orch->>Gen: generate_product_page(ProductData)
+        Orch->>Gen: generate_comparison(ProductData)
+    end
+    
+    Gen-->>Orch: JSON Objects
+    Orch->>FS: Save .json files
+    Orch-->>User: Success
+```
+
+### Component Roles
+1.  **Orchestrator**: Manages the lifecycle and data flow using `RunnableSequence` and `RunnableParallel`.
+2.  **Product Analyzer**: "Gatekeeper" agent. Ensures raw text is converted to a strict schema (`ProductData`), filtering noise.
+3.  **Generators**:
+    *   *FAQ*: specific logic for categorization and Q&A pairs.
+    *   *Product Page*: Formats usage steps and copies.
+    *   *Comparison*: context-aware competitor generation.
