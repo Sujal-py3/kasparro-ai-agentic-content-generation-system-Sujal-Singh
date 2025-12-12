@@ -1,56 +1,39 @@
-# Kasparro Multi-Agent Content System
+# Project Documentation: Agentic Content Generation System
 
-## Problem Statement
-Manual content creation is slow and inconsistent. We need an autonomous system to turn raw product data into structured JSON content (FAQ, Product Page, Comparison) without human editing.
+## 1. System Overview
+This project is a modular, agentic system designed to automate the creation of high-quality marketing assets (Product Pages, FAQs, and Comparison Pages) from raw product data. It leverages **LangChain** and **Groq (Llama-3)** to understand semi-structured input and generate strictly compliant JSON outputs.
 
-## Solution Overview
-A multi-agent pipeline that processes data in stages:
-1.  **Ingest**: Clean and strictly type raw input.
-2.  **Generate**: specialized agents create questions and comparison logic.
-3.  **Assemble**: Combine data into key-value JSON outputs.
+## 2. Architecture Design
+The system follows a linear **LCEL (LangChain Expression Language)** pipeline architecture:
 
-## Scopes & Assumptions
-*   **Input**: JSON-like product dictionary (e.g., Vitamin C Serum).
-*   **Output**: 3 JSON files (FAQ, Product, Comparison).
-*   **Constraints**: No external research. Strict valid JSON.
-*   **Assumption**: "Product B" is computationally derived (e.g., 50% price of A).
+1.  **Ingestion & Analysis**: Raw data is parsed by the **Product Analyzer Agent** into a strict internal schema (`ProductData`).
+2.  **Parallel Generation**: The structured data is broadcast to three specialized agents running in parallel:
+    *   **Content Generator (FAQ)**: Generates categorized questions and detailed Q&A pairs.
+    *   **Content Generator (Product Page)**: Generates marketing copy and structured usage instructions.
+    *   **Comparison Generator**: Generates a fictional competitor (Product B) based on rule-based prompts and performs a feature-by-feature comparison.
+3.  **Output**: JSON files are persisted to the `/out` directory.
 
-## System Design
-The **Orchestrator** manages four agents to ensure strict data compliance.
+## 3. Component Details
 
-### Components
-*   **ParserAgent**: Enforces data types (e.g., "₹699" as string).
-*   **QuestionGeneratorAgent**: Creates 15+ factual questions from data fields.
-*   **ComparisonAgent**: Generates a generic "Product B" and calculates differences.
-*   **AssemblerAgent**: Formats data into final JSON templates.
+### 3.1 Data Models (`src/models.py`)
+-   **`ProductData`**: The single source of truth for product information.
+-   **`Usage`**: Structured step-by-step usage instructions.
+-   **`FAQObject`**: Contains both `categorized_questions` (list of 15) and `faq_page` (top 5 Q&A).
+-   **`ComparisonPage`**: Contains full data for Product A vs. Product B, differences, and recommendations.
 
-### Architecture
-```mermaid
-graph TD
-    Input["Input Data"] -->|Raw Dict| Parser["ParserAgent"]
-    Parser -->|ProductData| Orchestrator["Orchestrator"]
-    
-    Orchestrator --> QuestionGen["QuestionGeneratorAgent"]
-    Orchestrator --> Comparison["ComparisonAgent"]
-    
-    QuestionGen -->|FAQ Entries| Assembler["AssemblerAgent"]
-    Comparison -->|Diffs & Recs| Assembler
-    
-    Assembler --> Output["Final JSON Files"]
-```
+### 3.2 Agents
+-   **Product Analyzer**: Uses `ChatGroq` to extract entities without hallucination. strict schema enforcement via `PydanticOutputParser`.
+-   **Content Generator**: 
+    -   *FAQ Mode*: Generates 15 questions across specific categories (Usage, Safety, etc.).
+    -   *Product Page Mode*: Focuses on copywriting and structuring instructions.
+-   **Comparison Generator**: 
+    -   Implements "Product B" generation logic (price +20%, distinct ingredients) via prompt engineering.
 
-### Flow
-```mermaid
-sequenceDiagram
-    participant Main as "Main Script"
-    participant Orch as "Orchestrator"
-    participant Agents as "Agents (Parser/Gen/Comp)"
-    participant Assem as "AssemblerAgent"
+### 3.3 Orchestration (`src/orchestrator.py`)
+-   Uses `RunnableSequence` (`|`) to pipe analysis results to generation.
+-   Uses `RunnableParallel` to execute the three generation tasks concurrently.
 
-    Main->>Orch: Start with Data
-    Orch->>Agents: Parse & Generate Content
-    Agents-->>Orch: Structured Models
-    Orch->>Assem: Send Data for Assembly
-    Assem-->>Orch: Final JSON Models
-    Orch-->>Main: Save Output Files
-```
+## 4. Setup & Usage
+1.  **Environment**: Ensure `GROQ_API_KEY` is set in `.env`.
+2.  **Run**: `python src/main.py`
+3.  **Output**: Check `out/faq.json`, `out/product_page.json`, `out/comparison_page.json`.

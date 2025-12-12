@@ -1,56 +1,67 @@
-from typing import List, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import List, Dict, Optional
 
-# --- Internal Data Models ---
 
+# -----------------------------
+# 1. INTERNAL PRODUCT MODEL
+# -----------------------------
 class ProductData(BaseModel):
-    """Internal model for the product data."""
     name: str
     concentration: str
-    skin_type: List[str] # Changed to LIST per feedback
+    skin_type: List[str]
     key_ingredients: List[str]
     benefits: List[str]
-    how_to_use: str
+    usage: str
     side_effects: str
-    price: str 
+    price: str
 
-class DifferenceSet(BaseModel):
-    """Set of differences for a specific feature category."""
-    a_only: List[str]
-    b_only: List[str]
-    common: List[str]
 
-class ComparisonDifferences(BaseModel):
-    """Strict structure for comparison differences."""
-    ingredients: DifferenceSet
-    benefits: DifferenceSet
+# -----------------------------
+# 2. FAQ STRUCTURES
+# -----------------------------
 
-# --- Output Models ---
-
-class FAQEntry(BaseModel):
+class FAQPair(BaseModel):
     question: str
     answer: str
-    category: str 
 
-class FAQPage(BaseModel):
-    page_type: str = "faq"
-    title: str
-    entries: List[FAQEntry]
 
+class FAQObject(BaseModel):
+    title: str = Field(..., description="Page title")
+    categorized_questions: Dict[str, List[str]] = Field(
+        ..., description="15+ questions grouped by category"
+    )
+    faq_page: List[FAQPair] = Field(
+        ..., description="Top 5 Q&A pairs used for the public FAQ page"
+    )
+
+
+# -----------------------------
+# 3. PRODUCT PAGE STRUCTURE
+# -----------------------------
 class ProductPage(BaseModel):
-    page_type: str = "product_page"
+    page_type: str = Field(..., description="Should always be 'product_page'")
     title: str
     short_description: str
     benefits: List[str]
     ingredients: List[str]
-    usage: str
+    usage: str  # must be a string (important fix)
     safety: List[str]
     price: str
 
+
+# -----------------------------
+# 4. COMPARISON STRUCTURES
+# -----------------------------
+class ComparisonProduct(BaseModel):
+    name: str
+    key_ingredients: List[str]
+    benefits: List[str]
+    price: str
+
+
 class ComparisonPage(BaseModel):
-    page_type: str = "comparison_page"
-    title: str
+    page_type: str = Field(..., description="Should always be 'comparison_page'")
     product_a: ProductData
-    product_b: ProductData
-    differences: ComparisonDifferences
-    recommendation: List[str]
+    product_b: ComparisonProduct
+    differences: Dict[str, List[str]]
+    recommendations: List[str]
